@@ -143,12 +143,13 @@ if __name__ == '__main__':
         for ii in images_id:
             idx, path = ii
             img_path = os.path.join(args.data_dir, IMAGES_FOLDER, path)
+            class_folder, _ = path.split('/')
             seg_path = os.path.join(args.data_dir, SEGMENTATION_FOLDER, path.replace('.jpg','.png'))
             xmin, ymin, xoffset, yoffset = [float(n) for n in bounding_boxes[idx]]  #xoffset=width, yoffset=height
             center = [int(xmin + xoffset/2), int(ymin + yoffset/2)]
             h = int(max([xoffset, yoffset]))
             for in_path,folder in zip([img_path, seg_path], [IMAGES_FOLDER, SEGMENTATION_FOLDER]):
-                name = os.path.join(folder, '{}.{}'.format(idx, in_path.split('.')[-1]))
+                name = os.path.join(folder, class_folder, in_path.split('/')[-1])
                 img = imageio.imread(in_path)
                 _img = center_crop(img, [h,h], center=center, scale=1.2)
                 #_img = crop(img, [yoffset, xoffset], center=center)
@@ -159,6 +160,9 @@ if __name__ == '__main__':
                     pass
                 _img = np.array(Image.fromarray(_img).resize(output_size))
                 out_path = os.path.join(cc_dir, name)
+                par_dir = os.path.dirname(os.path.abspath(out_path))
+                if not os.path.exists(par_dir):
+                    os.makedirs(par_dir)
                 imageio.imwrite(out_path, _img)
                 print (" -- Save {}".format(out_path))
                 f.write("{} ".format(name))
